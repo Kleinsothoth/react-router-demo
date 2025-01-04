@@ -1,0 +1,63 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+}
+
+.app-container {
+  height: 100vh;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.menu-item {
+  cursor: pointer;
+  padding: 8px 0;
+  transition: color 0.3s;
+}
+
+.menu-item:hover {
+  color: #7c3aed;
+}
+
+.main-content {
+  overflow-y: auto;
+}
+
+.tool-card {
+  display: flex;
+  align-items: center;
+  transition: box-shadow 0.3s;
+}
+
+.tool-card:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.search-bar input {
+  padding: 8px;
+}
+
+.toggle-button {
+  margin: 5px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+.toggle-button.active {
+  background-color: #e6f7ff;
+  border-color: #1890ff;
+}
+
+.dropdown-content {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+}

@@ -1,0 +1,10 @@
+{
+  "test-endpoint": {
+    "success": true,
+    "message": "HttpsRequest is working!",
+    "data": {
+      "id": 1,
+      "name": "Test Data"
+    }
+  }
+}
