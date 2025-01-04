@@ -1,131 +1,95 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // 用于页面跳转
-import HttpsRequest from "../utils/HttpsRequest"; // 确保路径正确
+import { useNavigate } from "react-router-dom";
 
-const LoginForm = () => {
-  const [username, setUsername] = useState(""); // 保存用户名
-  const [password, setPassword] = useState(""); // 保存密码
-  const [responseMessage, setResponseMessage] = useState(""); // 显示响应信息
-  const [loading, setLoading] = useState(false); // 加载状态
-  const apiClient = new HttpsRequest("http://1.13.2.20:886"); // 初始化 HttpsRequest
-  const navigate = useNavigate(); // 用于页面跳转
+function LoginForm() {
+  const navigate = useNavigate();
+  
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
-  // 处理用户名输入
-  const handleUsernameChange = (e) => {
-    setUsername(e.target.value);
-  };
-
-  // 处理密码输入
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
-  };
-
-  // 登录功能
-  const handleLogin = async () => {
-    if (!username.trim() || !password.trim()) {
-      setResponseMessage("Error: Username and password cannot be empty.");
-      return;
-    }
+  // 点击登录按钮时触发
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
     try {
-      setLoading(true); // 设置加载状态
-      setResponseMessage("Logging in...");
-      const response = await apiClient.request("/edux/api0/user/login", {
+      // 调用后端接口
+      const response = await fetch("http://1.13.2.20:886/edux/api0/user/login", {
         method: "POST",
-        body: {
-          code1: username, // 用户名
-          code2: password, // 密码
-          isRegister: 0, // 登录操作
+        headers: {
+          "Content-Type": "application/json",
         },
+        // 根据后端需要的字段名来发送
+        body: JSON.stringify({
+          username,   // 注意字段要和后端约定一致
+          password,
+        }),
       });
 
-      console.log("Login Response:", response);
-
-      if (response.uid && response.token) {
-        // 存储登录信息
-        localStorage.setItem("uid", response.uid);
-        localStorage.setItem("token", response.token);
-
-        setResponseMessage("Login Success! Redirecting...");
-        // 跳转到首页或用户尝试访问的页面
-        const redirectTo = localStorage.getItem("redirectTo") || "/";
-        localStorage.removeItem("redirectTo");
-        setTimeout(() => navigate(redirectTo), 1500);
-      } else {
-        setResponseMessage("Login failed: Invalid username or password.");
+      // 如果后端返回 HTTP 4xx/5xx，则 response.ok = false
+      if (!response.ok) {
+        // 可以在这里做更具体的错误提示，比如区分401/403等
+        alert("登录失败，可能是用户名或密码错误，或接口异常。");
+        return;
       }
+
+      // 解析后端返回的JSON
+      const result = await response.json();
+
+      // 假设后端格式 { code: 0, message: "..", data: { token, uid } }
+      if (result.code !== 0) {
+        // 非0表示后端判定登录失败
+        alert(`登录失败：${result.message || "请检查用户名或密码"}`);
+        return;
+      }
+
+      // 如果 code === 0，说明登录成功
+      const { token, uid } = result.data;
+
+      // 将 token, uid 存储到 localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("uid", uid);
+
+      // 跳转到主页面，比如首页 "/"
+      navigate("/");
     } catch (error) {
-      console.error("Login Error:", error.message);
-      setResponseMessage(`Login Failed: ${error.message}`);
-    } finally {
-      setLoading(false); // 恢复加载状态
+      console.error("登录请求发生错误:", error);
+      alert("登录请求出错，请检查网络或接口。");
     }
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h2>Login</h2>
-
-      {/* 用户名输入框 */}
-      <input
-        type="text"
-        value={username}
-        onChange={handleUsernameChange} // 绑定输入事件
-        placeholder="Enter username"
-        style={{
-          width: "300px",
-          padding: "10px",
-          fontSize: "16px",
-          marginBottom: "10px",
-          borderRadius: "4px",
-          border: "1px solid #ccc",
-        }}
-      />
-
-      {/* 密码输入框 */}
-      <input
-        type="password"
-        value={password}
-        onChange={handlePasswordChange} // 绑定输入事件
-        placeholder="Enter password"
-        style={{
-          width: "300px",
-          padding: "10px",
-          fontSize: "16px",
-          marginBottom: "10px",
-          borderRadius: "4px",
-          border: "1px solid #ccc",
-        }}
-      />
-
-      {/* 登录按钮 */}
-      <button
-        onClick={handleLogin} // 绑定登录功能
-        disabled={loading} // 禁用按钮在加载时
-        style={{
-          display: "inline-block",
-          backgroundColor: "#007BFF",
-          color: "white",
-          border: "none",
-          padding: "10px 20px",
-          borderRadius: "4px",
-          cursor: loading ? "not-allowed" : "pointer", // 禁用时改变光标样式
-        }}
-      >
-        {loading ? "Logging in..." : "Login"}
-      </button>
-
-      {/* 显示响应结果 */}
-      <p
-        style={{
-          marginTop: "10px",
-          color: responseMessage.startsWith("Error") ? "red" : "green",
-        }}
-      >
-        {responseMessage}
-      </p>
+    <div className="flex flex-col items-center mt-10">
+      <h2 className="text-2xl mb-4">登录</h2>
+      <form onSubmit={handleSubmit} className="w-64">
+        <div className="mb-4">
+          <label className="block mb-1">用户名</label>
+          <input
+            type="text"
+            className="border w-full px-2 py-1"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="请输入用户名"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block mb-1">密码</label>
+          <input
+            type="password"
+            className="border w-full px-2 py-1"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="请输入密码"
+          />
+        </div>
+        <button
+          type="submit"
+          className="bg-blue-500 hover:bg-blue-600 text-white w-full py-2"
+        >
+          登录
+        </button>
+      </form>
     </div>
   );
-};
+}
 
 export default LoginForm;
