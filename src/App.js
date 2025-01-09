@@ -9,6 +9,8 @@ import ChatPage from "./pages/ChatPage";
 import HistoryPage from "./pages/HistoryPage";
 import DatabasePage from "./pages/DatabasePage";
 import LoginForm from "./components/LoginForm";
+import Home from "./components/Home";
+import VideoPage from "./components/VideoPage";
 
 // 引入自定义的 ProtectedRoute
 import ProtectedRoute from "./ProtectedRoute";
@@ -16,8 +18,7 @@ import ProtectedRoute from "./ProtectedRoute";
 const App = () => {
   return (
     <div className="flex h-screen">
-      {/* 左侧导航栏，一般只有登录后才显示。
-          如果你想登录页也隐藏它，就可以做条件渲染或者干脆放在ProtectedRoute里 */}
+      {/* 左侧导航栏，登录后显示 */}
       <Sidebar />
 
       {/* 右侧主内容区域 */}
@@ -60,7 +61,25 @@ const App = () => {
             }
           />
 
-          {/* 其它的路由，比如 404 等 */}
+          {/* 新增 Home 和 VideoPage 页面 */}
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/video"
+            element={
+              <ProtectedRoute>
+                <VideoPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 404 页面 */}
           <Route path="*" element={<div>Page Not Found</div>} />
         </Routes>
       </main>
